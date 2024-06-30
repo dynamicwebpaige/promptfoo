@@ -124,7 +124,7 @@ def call_api(prompt, options, context):
 
 export const JAVASCRIPT_PROVIDER = `// Learn more about building a JavaScript provider: https://promptfoo.dev/docs/providers/custom-api
 // customApiProvider.js
-import fetch from 'node-fetch';
+import axios from 'axios';
 
 class CustomApiProvider {
   constructor(options) {

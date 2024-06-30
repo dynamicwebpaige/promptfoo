@@ -1,5 +1,5 @@
+import axios from 'axios';
 import type { Cache } from 'cache-manager';
-import fetch from 'node-fetch';
 import Replicate from 'replicate';
 import { getCache, isCacheEnabled } from '../cache';
 import logger from '../logger';
@@ -95,7 +95,7 @@ export class ReplicateProvider implements ApiProvider {
 
     const replicate = new Replicate({
       auth: this.apiKey,
-      fetch: fetch as any,
+      fetch: axios as any,
     });
 
     logger.debug(`Calling Replicate: ${prompt}`);
@@ -219,7 +219,7 @@ export class ReplicateModerationProvider
 
     const replicate = new Replicate({
       auth: this.apiKey,
-      fetch: fetch as any,
+      fetch: axios as any,
     });
 
     logger.debug(`Calling Replicate moderation API: prompt [${prompt}] assistant [${assistant}]`);

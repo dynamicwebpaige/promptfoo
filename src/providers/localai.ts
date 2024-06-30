@@ -67,7 +67,7 @@ export class LocalAiChatProvider extends LocalAiGenericProvider {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);
@@ -105,7 +105,7 @@ export class LocalAiEmbeddingProvider extends LocalAiGenericProvider {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);
@@ -151,7 +151,7 @@ export class LocalAiCompletionProvider extends LocalAiGenericProvider {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);

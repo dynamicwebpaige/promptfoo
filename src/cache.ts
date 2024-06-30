@@ -1,8 +1,8 @@
+import { AxiosRequestConfig } from 'axios';
 import cacheManager from 'cache-manager';
 import type { Cache } from 'cache-manager';
 import fsStore from 'cache-manager-fs-hash';
 import fs from 'fs';
-import type { RequestInfo, RequestInit } from 'node-fetch';
 import path from 'path';
 import { fetchWithRetries } from './fetch';
 import logger from './logger';
@@ -45,22 +45,21 @@ export function getCache() {
 }
 
 export async function fetchWithCache(
-  url: RequestInfo,
-  options: RequestInit = {},
+  url: string,
+  options: AxiosRequestConfig = {},
   timeout: number,
   format: 'json' | 'text' = 'json',
   bust: boolean = false,
 ): Promise<{ data: any; cached: boolean }> {
   if (!enabled || bust) {
     const resp = await fetchWithRetries(url, options, timeout);
-    const respText = await resp.text();
     try {
       return {
         cached: false,
-        data: format === 'json' ? JSON.parse(respText) : respText,
+        data: format === 'json' ? resp.data : JSON.stringify(resp.data),
       };
     } catch (error) {
-      throw new Error(`Error parsing response as JSON: ${respText}`);
+      throw new Error(`Error parsing response as JSON: ${resp.data}`);
     }
   }
 
@@ -78,10 +77,9 @@ export async function fetchWithCache(
     // Fetch the actual data and store it in the cache
     cached = false;
     const response = await fetchWithRetries(url, options, timeout);
-    const responseText = await response.text();
     try {
-      const data = JSON.stringify(format === 'json' ? JSON.parse(responseText) : responseText);
-      if (!response.ok) {
+      const data = JSON.stringify(format === 'json' ? response.data : JSON.parse(response.data));
+      if (response.status >= 400) {
         errorResponse = data;
         // Don't cache error responses
         return;
@@ -96,7 +94,7 @@ export async function fetchWithCache(
       throw new Error(
         `Error parsing response from ${url}: ${
           (err as Error).message
-        }. Received text: ${responseText}`,
+        }. Received text: ${response.data}`,
       );
     }
   });

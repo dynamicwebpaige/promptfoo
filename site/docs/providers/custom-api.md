@@ -57,7 +57,7 @@ Here's an example of a custom API provider that returns a predefined output alon
 
 ```javascript
 // customApiProvider.js
-import fetch from 'node-fetch';
+import axios from 'axios';
 
 class CustomApiProvider {
   constructor(options) {
@@ -120,7 +120,7 @@ const { data, cached } = await promptfoo.cache.fetchWithCache(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
-    body: JSON.stringify(body),
+    data: body,
   },
   10_000 /* 10 second timeout */,
 );

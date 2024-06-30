@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 import invariant from 'tiny-invariant';
 
 interface PortkeyResponse {
@@ -25,20 +25,22 @@ export async function getPrompt(
   invariant(process.env.PORTKEY_API_KEY, 'PORTKEY_API_KEY is required');
 
   const url = `https://api.portkey.ai/v1/prompts/${id}/render`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-portkey-api-key': process.env.PORTKEY_API_KEY,
+  const response = await axios.post(
+    url,
+    { variables },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-portkey-api-key': process.env.PORTKEY_API_KEY,
+      },
     },
-    body: JSON.stringify({ variables }),
-  });
+  );
 
-  if (!response.ok) {
+  if (response.status !== 200) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  const result = (await response.json()) as PortkeyResponse;
+  const result = response.data as PortkeyResponse;
   if (!result.success) {
     throw new Error(`Portkey error! ${JSON.stringify(result)}`);
   }

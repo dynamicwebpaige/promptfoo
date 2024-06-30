@@ -207,7 +207,7 @@ abstract class CloudflareAiGenericProvider implements ApiProvider {
         {
           method: 'POST',
           headers: this.buildApiHeaders(),
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);

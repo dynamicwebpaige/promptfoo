@@ -121,7 +121,7 @@ export class CohereChatCompletionProvider implements ApiProvider {
             Authorization: `Bearer ${this.apiKey}`,
             'X-Client-Name': process.env.COHERE_CLIENT_NAME || 'promptfoo',
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as { data: any; cached: boolean });

@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const axios = require('axios');
 
 class CustomApiProvider {
   constructor(options) {
@@ -22,16 +22,14 @@ class CustomApiProvider {
       model: 'text-embedding-3-large',
       input: prompt,
     };
-    const response = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
+    const response = await axios.post('https://api.openai.com/v1/embeddings', body, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
-      body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = response.data;
     if (!data) {
       return {
         error: 'Unknown error',

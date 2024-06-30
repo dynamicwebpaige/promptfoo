@@ -201,7 +201,7 @@ export class MistralChatCompletionProvider implements ApiProvider {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.getApiKey()}`,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as { data: any; cached: boolean });

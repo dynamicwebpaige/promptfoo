@@ -1,24 +1,23 @@
-import fetch from 'node-fetch';
-import type { RequestInfo, RequestInit, Response } from 'node-fetch';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ProxyAgent } from 'proxy-agent';
 
 export async function fetchWithProxy(
-  url: RequestInfo,
-  options: RequestInit = {},
-): Promise<Response> {
-  options.agent = new ProxyAgent();
-  return fetch(url, options);
+  url: string,
+  options: AxiosRequestConfig = {},
+): Promise<AxiosResponse> {
+  options.httpAgent = new ProxyAgent();
+  options.httpsAgent = new ProxyAgent();
+  return axios(url, options);
 }
 
 export function fetchWithTimeout(
-  url: RequestInfo,
-  options: RequestInit = {},
+  url: string,
+  options: AxiosRequestConfig = {},
   timeout: number,
-): Promise<Response> {
+): Promise<AxiosResponse> {
   return new Promise((resolve, reject) => {
     const controller = new AbortController();
-    const { signal } = controller;
-    options.signal = signal;
+    options.signal = controller.signal;
 
     const timeoutId = setTimeout(() => {
       controller.abort();
@@ -38,11 +37,11 @@ export function fetchWithTimeout(
 }
 
 export async function fetchWithRetries(
-  url: RequestInfo,
-  options: RequestInit = {},
+  url: string,
+  options: AxiosRequestConfig = {},
   timeout: number,
   retries: number = 4,
-): Promise<Response> {
+): Promise<AxiosResponse> {
   let lastError;
   const backoff = process.env.PROMPTFOO_REQUEST_BACKOFF_MS
     ? parseInt(process.env.PROMPTFOO_REQUEST_BACKOFF_MS, 10)
@@ -50,7 +49,7 @@ export async function fetchWithRetries(
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetchWithTimeout(url, options, timeout);
-      if (process.env.PROMPTFOO_RETRY_5XX && response.status / 100 === 5) {
+      if (process.env.PROMPTFOO_RETRY_5XX && response.status >= 500 && response.status < 600) {
         throw new Error(`Internal Server Error: ${response.status} ${response.statusText}`);
       }
       return response;

@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 import logger from '../logger';
 import type {
   ApiProvider,
@@ -44,23 +44,22 @@ class PromptfooHarmfulCompletionProvider implements ApiProvider {
       // We're using the promptfoo API to avoid having users provide their own unaligned model.
       // See here for a prompt you can use with Llama 3 base to host your own inference endpoint:
       // https://gist.github.com/typpo/3815d97a638f1a41d28634293aff33a0
-      const response = await fetch(
+      const response = await axios.post(
         process.env.PROMPTFOO_UNALIGNED_INFERENCE_ENDPOINT ||
           'https://api.promptfoo.dev/redteam/generateHarmful',
+        body,
         {
-          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(body),
         },
       );
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error(`API call failed with status ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = response.data;
       logger.debug(`promptfoo API call response: ${JSON.stringify(data)}`);
       return {
         output: data.output,

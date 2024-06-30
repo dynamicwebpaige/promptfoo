@@ -10,7 +10,7 @@ import {
 } from '../src/evaluator';
 import type { ApiProvider, TestSuite, Prompt } from '../src/types';
 
-jest.mock('node-fetch', () => jest.fn());
+jest.mock('axios');
 jest.mock('proxy-agent', () => ({
   ProxyAgent: jest.fn().mockImplementation(() => ({})),
 }));

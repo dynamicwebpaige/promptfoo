@@ -72,7 +72,7 @@ export class LlamaProvider implements ApiProvider {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       );

@@ -1,27 +1,22 @@
-import fetch, { Response } from 'node-fetch';
+import axios from 'axios';
 import { fetchWithCache, disableCache, enableCache, clearCache } from '../src/cache';
 
-jest.mock('node-fetch');
-const mockedFetch = jest.mocked(fetch);
+jest.mock('axios');
+const mockedAxios = jest.mocked(axios);
 
-const mockedFetchResponse = (ok: boolean, response: object) => {
+const mockedAxiosResponse = (ok: boolean, response: object) => {
   return {
-    ok,
-    text: () => Promise.resolve(JSON.stringify(response)),
+    status: ok ? 200 : 500,
+    data: response,
     headers: {
-      get: (name: string) => {
-        if (name === 'content-type') {
-          return 'application/json';
-        }
-        return null;
-      },
+      'content-type': 'application/json',
     },
-  } as unknown as Response;
+  };
 };
 
 describe('fetchWithCache', () => {
   afterEach(() => {
-    mockedFetch.mockReset();
+    mockedAxios.mockReset();
   });
 
   it('should not cache data with failed request', async () => {
@@ -30,11 +25,11 @@ describe('fetchWithCache', () => {
     const url = 'https://api.example.com/data';
     const response = { data: 'test data' };
 
-    mockedFetch.mockResolvedValueOnce(mockedFetchResponse(false, response));
+    mockedAxios.mockResolvedValueOnce(mockedAxiosResponse(false, response));
 
     const result = await fetchWithCache(url, {}, 1000);
 
-    expect(mockedFetch).toHaveBeenCalledTimes(1);
+    expect(mockedAxios).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ cached: false, data: response });
   });
 
@@ -44,11 +39,11 @@ describe('fetchWithCache', () => {
     const url = 'https://api.example.com/data';
     const response = { data: 'test data' };
 
-    mockedFetch.mockResolvedValueOnce(mockedFetchResponse(true, response));
+    mockedAxios.mockResolvedValueOnce(mockedAxiosResponse(true, response));
 
     const result = await fetchWithCache(url, {}, 1000);
 
-    expect(mockedFetch).toHaveBeenCalledTimes(1);
+    expect(mockedAxios).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ cached: false, data: response });
   });
 
@@ -56,11 +51,11 @@ describe('fetchWithCache', () => {
     const url = 'https://api.example.com/data';
     const response = { data: 'test data' };
 
-    mockedFetch.mockResolvedValueOnce(mockedFetchResponse(true, response));
+    mockedAxios.mockResolvedValueOnce(mockedAxiosResponse(true, response));
 
     const result = await fetchWithCache(url, {}, 1000);
 
-    expect(mockedFetch).toHaveBeenCalledTimes(0);
+    expect(mockedAxios).toHaveBeenCalledTimes(0);
     expect(result).toEqual({ cached: true, data: response });
   });
 
@@ -71,15 +66,15 @@ describe('fetchWithCache', () => {
     const url = 'https://api.example.com/data';
     const response = { data: 'test data' };
 
-    mockedFetch.mockResolvedValueOnce(mockedFetchResponse(true, response));
-    mockedFetch.mockRejectedValue(new Error('Should not be called'));
+    mockedAxios.mockResolvedValueOnce(mockedAxiosResponse(true, response));
+    mockedAxios.mockRejectedValue(new Error('Should not be called'));
 
     const [a, b] = await Promise.all([
       fetchWithCache(url, {}, 1000),
       fetchWithCache(url, {}, 1000),
     ]);
 
-    expect(mockedFetch).toHaveBeenCalledTimes(1);
+    expect(mockedAxios).toHaveBeenCalledTimes(1);
     expect(a).toEqual({ cached: false, data: response });
     expect(b).toEqual({ cached: true, data: response });
   });
@@ -90,11 +85,11 @@ describe('fetchWithCache', () => {
     const url = 'https://api.example.com/data';
     const response = { data: 'test data' };
 
-    mockedFetch.mockResolvedValueOnce(mockedFetchResponse(true, response));
+    mockedAxios.mockResolvedValueOnce(mockedAxiosResponse(true, response));
 
     const result = await fetchWithCache(url, {}, 1000);
 
-    expect(mockedFetch).toHaveBeenCalledTimes(1);
+    expect(mockedAxios).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ cached: false, data: response });
 
     enableCache();
@@ -106,11 +101,11 @@ describe('fetchWithCache', () => {
     const url = 'https://api.example.com/data';
     const response = { data: 'test data' };
 
-    mockedFetch.mockResolvedValueOnce(mockedFetchResponse(true, response));
+    mockedAxios.mockResolvedValueOnce(mockedAxiosResponse(true, response));
 
     const result = await fetchWithCache(url, {}, 1000);
 
-    expect(mockedFetch).toHaveBeenCalledTimes(1);
+    expect(mockedAxios).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ cached: false, data: response });
 
     enableCache();

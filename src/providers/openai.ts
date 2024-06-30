@@ -262,7 +262,7 @@ export class OpenAiEmbeddingProvider extends OpenAiGenericProvider {
             ...(this.getOrganization() ? { 'OpenAI-Organization': this.getOrganization() } : {}),
             ...this.config.headers,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);
@@ -394,7 +394,7 @@ export class OpenAiCompletionProvider extends OpenAiGenericProvider {
             ...(this.getOrganization() ? { 'OpenAI-Organization': this.getOrganization() } : {}),
             ...this.config.headers,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);
@@ -497,7 +497,7 @@ export class OpenAiChatCompletionProvider extends OpenAiGenericProvider {
             ...(this.getOrganization() ? { 'OpenAI-Organization': this.getOrganization() } : {}),
             ...this.config.headers,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as { data: any; cached: boolean });

@@ -5,7 +5,7 @@ import { testCaseFromCsvRow } from '../src/csv';
 import { readStandaloneTestsFile, readTest, readTests } from '../src/testCases';
 import type { AssertionType, TestCase } from '../src/types';
 
-jest.mock('node-fetch', () => jest.fn());
+jest.mock('axios', () => jest.fn());
 jest.mock('proxy-agent', () => ({
   ProxyAgent: jest.fn().mockImplementation(() => ({})),
 }));

@@ -185,7 +185,7 @@ export class AzureOpenAiEmbeddingProvider extends AzureOpenAiGenericProvider {
             'Content-Type': 'application/json',
             'api-key': apiKey,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);
@@ -292,7 +292,7 @@ export class AzureOpenAiCompletionProvider extends AzureOpenAiGenericProvider {
             'Content-Type': 'application/json',
             'api-key': apiKey,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);
@@ -392,7 +392,7 @@ export class AzureOpenAiChatCompletionProvider extends AzureOpenAiGenericProvide
             'Content-Type': 'application/json',
             'api-key': apiKey,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);

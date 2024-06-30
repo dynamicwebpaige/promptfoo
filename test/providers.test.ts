@@ -1,6 +1,6 @@
+import axios from 'axios';
 import child_process from 'child_process';
 import * as fs from 'fs';
-import fetch from 'node-fetch';
 import * as path from 'path';
 import Stream from 'stream';
 import { clearCache, disableCache, enableCache } from '../src/cache';
@@ -55,7 +55,7 @@ jest.mock('glob', () => ({
   globSync: jest.fn(),
 }));
 
-jest.mock('node-fetch', () => jest.fn());
+jest.mock('axios');
 jest.mock('proxy-agent', () => ({
   ProxyAgent: jest.fn().mockImplementation(() => ({})),
 }));
@@ -85,63 +85,57 @@ describe('call provider apis', () => {
 
   it('OpenAiCompletionProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [{ text: 'Test output' }],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
+      data: {
+        choices: [{ text: 'Test output' }],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiCompletionProvider('text-davinci-003');
     const result = await provider.callApi('Test prompt');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
   });
 
   it('OpenAiChatCompletionProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [{ message: { content: 'Test output' } }],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
-      ok: true,
+      data: {
+        choices: [{ message: { content: 'Test output' } }],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
+      status: 200,
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
       JSON.stringify([{ role: 'user', content: 'Test prompt' }]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
   });
 
   it('OpenAiChatCompletionProvider callApi with caching', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [{ message: { content: 'Test output 2' } }],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
-      ok: true,
+      data: {
+        choices: [{ message: { content: 'Test output 2' } }],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
+      status: 200,
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
       JSON.stringify([{ role: 'user', content: 'Test prompt 2' }]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output 2');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
 
@@ -149,29 +143,27 @@ describe('call provider apis', () => {
       JSON.stringify([{ role: 'user', content: 'Test prompt 2' }]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result2.output).toBe('Test output 2');
     expect(result2.tokenUsage).toEqual({ total: 10, cached: 10 });
   });
 
   it('OpenAiChatCompletionProvider callApi with cache disabled', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [{ message: { content: 'Test output' } }],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
-      ok: true,
+      data: {
+        choices: [{ message: { content: 'Test output' } }],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
+      status: 200,
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
       JSON.stringify([{ role: 'user', content: 'Test prompt' }]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
 
@@ -181,7 +173,7 @@ describe('call provider apis', () => {
       JSON.stringify([{ role: 'user', content: 'Test prompt' }]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(axios).toHaveBeenCalledTimes(2);
     expect(result2.output).toBe('Test output');
     expect(result2.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
 
@@ -197,10 +189,10 @@ describe('call provider apis', () => {
     const prompt = 'Test prompt';
     await provider.callApi(prompt);
 
-    expect(fetch).toHaveBeenCalledWith(
+    expect(axios).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        body: expect.stringMatching(`temperature\":3.1415926`),
+        data: expect.objectContaining({ temperature: 3.1415926 }),
       }),
     );
     expect(provider.config.temperature).toBe(config.temperature);
@@ -209,40 +201,36 @@ describe('call provider apis', () => {
 
   it('AzureOpenAiCompletionProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [{ text: 'Test output' }],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
+      data: {
+        choices: [{ text: 'Test output' }],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new AzureOpenAiCompletionProvider('text-davinci-003');
     const result = await provider.callApi('Test prompt');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
   });
 
   it('AzureOpenAiChatCompletionProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [{ message: { content: 'Test output' } }],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
+      data: {
+        choices: [{ message: { content: 'Test output' } }],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new AzureOpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
       JSON.stringify([{ role: 'user', content: 'Test prompt' }]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
   });
@@ -258,18 +246,16 @@ describe('call provider apis', () => {
       },
     ];
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [
-            { message: { role: 'system', content: 'System prompt' } },
-            { message: { role: 'user', content: 'Test prompt' } },
-            { message: { role: 'assistant', content: 'Test response' } },
-          ],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
+      data: {
+        choices: [
+          { message: { role: 'system', content: 'System prompt' } },
+          { message: { role: 'user', content: 'Test prompt' } },
+          { message: { role: 'assistant', content: 'Test response' } },
+        ],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new AzureOpenAiChatCompletionProvider('gpt-3.5-turbo', {
       config: { dataSources },
@@ -281,7 +267,7 @@ describe('call provider apis', () => {
       ]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test response');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
   });
@@ -290,21 +276,19 @@ describe('call provider apis', () => {
     disableCache();
 
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          choices: [{ message: { content: 'Test output' } }],
-          usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
-        }),
-      ),
+      data: {
+        choices: [{ message: { content: 'Test output' } }],
+        usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
+      },
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new AzureOpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
       JSON.stringify([{ role: 'user', content: 'Test prompt' }]),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({ total: 10, prompt: 5, completion: 5 });
 
@@ -313,25 +297,22 @@ describe('call provider apis', () => {
 
   it('LlamaProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          content: 'Test output',
-        }),
-      ),
+      data: {
+        content: 'Test output',
+      },
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new LlamaProvider('llama.cpp');
     const result = await provider.callApi('Test prompt');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
   });
 
   it('OllamaCompletionProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn()
-        .mockResolvedValue(`{"model":"llama2:13b","created_at":"2023-08-08T21:50:34.898068Z","response":"Gre","done":false}
+      data: `{"model":"llama2:13b","created_at":"2023-08-08T21:50:34.898068Z","response":"Gre","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:34.929199Z","response":"at","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:34.959989Z","response":" question","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:34.992117Z","response":"!","done":false}
@@ -339,51 +320,50 @@ describe('call provider apis', () => {
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:35.0551Z","response":" sky","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:35.086103Z","response":" appears","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:35.117166Z","response":" blue","done":false}
-{"model":"llama2:13b","created_at":"2023-08-08T21:50:41.695299Z","done":true,"context":[1,29871,1,13,9314],"total_duration":10411943458,"load_duration":458333,"sample_count":217,"sample_duration":154566000,"prompt_eval_count":11,"prompt_eval_duration":3334582000,"eval_count":216,"eval_duration":6905134000}`),
+{"model":"llama2:13b","created_at":"2023-08-08T21:50:41.695299Z","done":true,"context":[1,29871,1,13,9314],"total_duration":10411943458,"load_duration":458333,"sample_count":217,"sample_duration":154566000,"prompt_eval_count":11,"prompt_eval_duration":3334582000,"eval_count":216,"eval_duration":6905134000}`,
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios.post).mockResolvedValue(mockResponse);
 
     const provider = new OllamaCompletionProvider('llama');
     const result = await provider.callApi('Test prompt');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios.post).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Great question! The sky appears blue');
   });
 
   it('OllamaChatProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn()
-        .mockResolvedValue(`{"model":"orca-mini","created_at":"2023-12-16T01:46:19.263682972Z","message":{"role":"assistant","content":" Because","images":null},"done":false}
+      data: `{"model":"orca-mini","created_at":"2023-12-16T01:46:19.263682972Z","message":{"role":"assistant","content":" Because","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.275143974Z","message":{"role":"assistant","content":" of","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.288137727Z","message":{"role":"assistant","content":" Ray","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.301139709Z","message":{"role":"assistant","content":"leigh","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.311364699Z","message":{"role":"assistant","content":" scattering","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.324309782Z","message":{"role":"assistant","content":".","images":null},"done":false}
-{"model":"orca-mini","created_at":"2023-12-16T01:46:19.337165395Z","done":true,"total_duration":1486443841,"load_duration":1280794143,"prompt_eval_count":35,"prompt_eval_duration":142384000,"eval_count":6,"eval_duration":61912000}`),
+{"model":"orca-mini","created_at":"2023-12-16T01:46:19.337165395Z","done":true,"total_duration":1486443841,"load_duration":1280794143,"prompt_eval_count":35,"prompt_eval_duration":142384000,"eval_count":6,"eval_duration":61912000}`,
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios.post).mockResolvedValue(mockResponse);
 
     const provider = new OllamaChatProvider('llama');
     const result = await provider.callApi('Test prompt');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(result.output).toBe(' Because of Rayleigh scattering.');
+    expect(result).toEqual({
+      output: ' Because of Rayleigh scattering.',
+    });
+    expect(axios.post).toHaveBeenCalledTimes(1);
   });
 
   it('WebhookProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          output: 'Test output',
-        }),
-      ),
+      data: {
+        output: 'Test output',
+      },
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new WebhookProvider('http://example.com/webhook');
     const result = await provider.callApi('Test prompt');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.output).toBe('Test output');
   });
 
@@ -393,28 +373,28 @@ describe('call provider apis', () => {
   ])('HuggingfaceTextGenerationProvider callApi with %s', (format, mockedData) => {
     it('returns expected output', async () => {
       const mockResponse = {
-        text: jest.fn().mockResolvedValue(JSON.stringify(mockedData)),
+        data: mockedData,
       };
-      jest.mocked(fetch).mockResolvedValue(mockResponse);
+      jest.mocked(axios).mockResolvedValue(mockResponse);
 
       const provider = new HuggingfaceTextGenerationProvider('gpt2');
       const result = await provider.callApi('Test prompt');
 
-      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(axios).toHaveBeenCalledTimes(1);
       expect(result.output).toBe('Test output');
     });
   });
 
   it('HuggingfaceFeatureExtractionProvider callEmbeddingApi', async () => {
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(JSON.stringify([0.1, 0.2, 0.3, 0.4, 0.5])),
+      data: [0.1, 0.2, 0.3, 0.4, 0.5],
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new HuggingfaceFeatureExtractionProvider('distilbert-base-uncased');
     const result = await provider.callEmbeddingApi('Test text');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.embedding).toEqual([0.1, 0.2, 0.3, 0.4, 0.5]);
   });
 
@@ -432,14 +412,14 @@ describe('call provider apis', () => {
       ],
     ];
     const mockResponse = {
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockClassification)),
+      data: mockClassification,
     };
-    jest.mocked(fetch).mockResolvedValue(mockResponse);
+    jest.mocked(axios).mockResolvedValue(mockResponse);
 
     const provider = new HuggingfaceTextClassificationProvider('foo');
     const result = await provider.callClassificationApi('Test text');
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(axios).toHaveBeenCalledTimes(1);
     expect(result.classification).toEqual({
       nothate: 0.9,
       hate: 0.1,
@@ -451,7 +431,7 @@ describe('call provider apis', () => {
       enableCache();
     });
 
-    const fetchMock = jest.mocked(fetch);
+    const axiosMock = jest.mocked(axios);
     const cloudflareMinimumConfig: Required<
       Pick<ICloudflareProviderBaseConfig, 'accountId' | 'apiKey'>
     > = {
@@ -484,20 +464,20 @@ describe('call provider apis', () => {
           },
         };
         const mockResponse = {
-          text: jest.fn().mockResolvedValue(JSON.stringify(responsePayload)),
-          ok: true,
+          data: responsePayload,
+          status: 200,
         };
 
-        fetchMock.mockResolvedValue(mockResponse);
+        axiosMock.mockResolvedValue(mockResponse);
         const result = await provider.callApi(PROMPT);
 
-        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(axios).toHaveBeenCalledTimes(1);
         expect(result.output).toBe(responsePayload.result.response);
         expect(result.tokenUsage).toEqual(tokenUsageDefaultResponse);
 
         const resultFromCache = await provider.callApi(PROMPT);
 
-        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(axios).toHaveBeenCalledTimes(1);
         expect(resultFromCache.output).toBe(responsePayload.result.response);
         expect(resultFromCache.tokenUsage).toEqual(tokenUsageDefaultResponse);
       });
@@ -519,19 +499,19 @@ describe('call provider apis', () => {
             },
           };
           const mockResponse = {
-            text: jest.fn().mockResolvedValue(JSON.stringify(responsePayload)),
-            ok: true,
+            data: responsePayload,
+            status: 200,
           };
 
-          fetchMock.mockResolvedValue(mockResponse);
+          axiosMock.mockResolvedValue(mockResponse);
           const result = await provider.callApi(PROMPT);
 
-          expect(fetch).toHaveBeenCalledTimes(1);
+          expect(axios).toHaveBeenCalledTimes(1);
           expect(result.output).toBe(responsePayload.result.response);
           expect(result.tokenUsage).toEqual(tokenUsageDefaultResponse);
 
           const resultFromCache = await provider.callApi(PROMPT);
-          expect(fetch).toHaveBeenCalledTimes(2);
+          expect(axios).toHaveBeenCalledTimes(2);
           expect(resultFromCache.output).toBe(responsePayload.result.response);
           expect(resultFromCache.tokenUsage).toEqual(tokenUsageDefaultResponse);
         } finally {
@@ -551,11 +531,11 @@ describe('call provider apis', () => {
           messages: [],
         };
         const mockResponse = {
-          text: jest.fn().mockResolvedValue(JSON.stringify(responsePayload)),
-          ok: true,
+          data: responsePayload,
+          status: 200,
         };
 
-        fetchMock.mockResolvedValue(mockResponse);
+        axiosMock.mockResolvedValue(mockResponse);
         const result = await provider.callApi(PROMPT);
 
         expect(result.error).toContain(JSON.stringify(responsePayload.errors));
@@ -593,20 +573,20 @@ describe('call provider apis', () => {
           },
         };
         const mockResponse = {
-          text: jest.fn().mockResolvedValue(JSON.stringify(responsePayload)),
-          ok: true,
+          data: responsePayload,
+          status: 200,
         };
 
-        fetchMock.mockResolvedValue(mockResponse);
+        axiosMock.mockResolvedValue(mockResponse);
         await cfProvider.callApi(PROMPT);
 
-        expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(fetchMock.mock.calls).toHaveLength(1);
-        const [url, { body, headers, method }] = fetchMock.mock.calls[0];
+        expect(axiosMock).toHaveBeenCalledTimes(1);
+        expect(axiosMock.mock.calls).toHaveLength(1);
+        const [url, { data, headers, method }] = axiosMock.mock.calls[0];
         expect(url).toContain(cloudflareChatConfig.accountId);
         expect(method).toBe('POST');
         expect(headers['Authorization']).toContain(cloudflareChatConfig.apiKey);
-        const hydratedBody = JSON.parse(body);
+        const hydratedBody = JSON.parse(data);
         expect(hydratedBody.prompt).toBe(PROMPT);
 
         const { accountId, apiKey, ...passThroughConfig } = cloudflareChatConfig;
@@ -630,14 +610,14 @@ describe('call provider apis', () => {
           },
         };
         const mockResponse = {
-          text: jest.fn().mockResolvedValue(JSON.stringify(responsePayload)),
-          ok: true,
+          data: responsePayload,
+          status: 200,
         };
 
-        fetchMock.mockResolvedValue(mockResponse);
+        axiosMock.mockResolvedValue(mockResponse);
         const result = await provider.callApi('Test chat prompt');
 
-        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(axios).toHaveBeenCalledTimes(1);
         expect(result.output).toBe(responsePayload.result.response);
         expect(result.tokenUsage).toEqual(tokenUsageDefaultResponse);
       });
@@ -660,14 +640,14 @@ describe('call provider apis', () => {
         };
 
         const mockResponse = {
-          text: jest.fn().mockResolvedValue(JSON.stringify(responsePayload)),
-          ok: true,
+          data: responsePayload,
+          status: 200,
         };
 
-        fetchMock.mockResolvedValue(mockResponse);
+        axiosMock.mockResolvedValue(mockResponse);
         const result = await provider.callEmbeddingApi('Create embeddings from this');
 
-        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(axios).toHaveBeenCalledTimes(1);
         expect(result.embedding).toEqual(responsePayload.result.data[0]);
         expect(result.tokenUsage).toEqual(tokenUsageDefaultResponse);
       });

@@ -61,7 +61,7 @@ export class VoyageEmbeddingProvider implements ApiEmbeddingProvider {
             Authorization: `Bearer ${this.getApiKey()}`,
             ...this.config.headers,
           },
-          body: JSON.stringify(body),
+          data: body,
         },
         REQUEST_TIMEOUT_MS,
       )) as unknown as any);
