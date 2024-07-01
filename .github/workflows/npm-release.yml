@@ -28,7 +28,8 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
       - run: npm ci
-      - run: |
+      - name: Publish to npm
+        run: |
           echo "//registry.npmjs.org/:_authToken=\${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           npm publish
         env:
