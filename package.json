@@ -5,7 +5,10 @@
   "version": "0.68.0",
   "license": "MIT",
   "type": "commonjs",
-  "repository": "promptfoo/promptfoo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/promptfoo/promptfoo.git"
+  },
   "main": "dist/src/index.js",
   "exports": {
     ".": {
