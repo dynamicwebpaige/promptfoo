@@ -8,7 +8,6 @@ import * as fs from 'fs';
 import { globSync } from 'glob';
 import yaml from 'js-yaml';
 import nunjucks from 'nunjucks';
-import * as os from 'os';
 import * as path from 'path';
 import invariant from 'tiny-invariant';
 import cliState from '../cliState';
@@ -49,6 +48,7 @@ import {
   isApiProvider,
   isProviderOptions,
 } from '../types';
+import { getConfigDirectoryPath } from './config';
 
 const DEFAULT_QUERY_LIMIT = 100;
 
@@ -450,20 +450,6 @@ export async function readOutput(outputPath: string): Promise<OutputFile> {
     default:
       throw new Error(`Unsupported output file format: ${ext} currently only supports json`);
   }
-}
-
-let configDirectoryPath: string | undefined = process.env.PROMPTFOO_CONFIG_DIR;
-
-export function getConfigDirectoryPath(createIfNotExists: boolean = false): string {
-  const p = configDirectoryPath || path.join(os.homedir(), '.promptfoo');
-  if (createIfNotExists && !fs.existsSync(p)) {
-    fs.mkdirSync(p, { recursive: true });
-  }
-  return p;
-}
-
-export function setConfigDirectoryPath(newPath: string): void {
-  configDirectoryPath = newPath;
 }
 
 /**
