@@ -23,14 +23,16 @@ jest.mock('fs', () => ({
   mkdirSync: jest.fn(),
 }));
 
-jest.mock('../src/esm');
 jest.mock('../src/database');
 
-beforeEach(() => {
-  jest.clearAllMocks();
-});
 
-describe('util', () => {
+
+describe('util/config', () => {
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
   describe('dereferenceConfig', () => {
     it('should dereference a config with no $refs', async () => {
       const rawConfig = {
