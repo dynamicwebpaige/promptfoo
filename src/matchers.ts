@@ -28,7 +28,8 @@ import type {
   ProviderType,
   ApiModerationProvider,
 } from './types';
-import { extractJsonObjects, getNunjucksEngine } from './util';
+import { extractJsonObjects } from './util';
+import { getNunjucksEngine } from './util/format';
 
 const nunjucks = getNunjucksEngine();
 

@@ -16,7 +16,7 @@ import type {
   ProviderEmbeddingResponse,
   ProviderResponse,
 } from '../types';
-import { renderVarsInObject } from '../util';
+import { renderVarsInObject } from '../util/format';
 import { REQUEST_TIMEOUT_MS, parseChatPrompt, toTitleCase } from './shared';
 
 interface AzureOpenAiCompletionOptions {

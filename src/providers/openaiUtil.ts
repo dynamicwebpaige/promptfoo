@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import { renderVarsInObject } from '../util';
+import { renderVarsInObject } from '../util/format';
 
 const ajv = new Ajv();
 

@@ -7,7 +7,6 @@ import deepEqual from 'fast-deep-equal';
 import * as fs from 'fs';
 import { globSync } from 'glob';
 import yaml from 'js-yaml';
-import nunjucks from 'nunjucks';
 import * as path from 'path';
 import invariant from 'tiny-invariant';
 import cliState from '../cliState';
@@ -49,6 +48,7 @@ import {
   isProviderOptions,
 } from '../types';
 import { getConfigDirectoryPath } from './config';
+import { getNunjucksEngine } from './format';
 
 const DEFAULT_QUERY_LIMIT = 100;
 
@@ -314,25 +314,6 @@ export async function readConfigs(configPaths: string[]): Promise<UnifiedConfig>
   };
 
   return combinedConfig;
-}
-
-export function getNunjucksEngine(filters?: NunjucksFilterMap) {
-  if (process.env.PROMPTFOO_DISABLE_TEMPLATING) {
-    return {
-      renderString: (template: string) => template,
-    };
-  }
-
-  const env = nunjucks.configure({
-    autoescape: false,
-  });
-
-  if (filters) {
-    for (const [name, filter] of Object.entries(filters)) {
-      env.addFilter(name, filter);
-    }
-  }
-  return env;
 }
 
 export async function writeOutput(
@@ -1271,30 +1252,6 @@ export function resultIsForTestCase(result: EvaluateResult, testCase: TestCase):
     : true;
 
   return varsMatch(testCase.vars, result.vars) && providersMatch;
-}
-
-export function renderVarsInObject<T>(obj: T, vars?: Record<string, string | object>): T {
-  // Renders nunjucks template strings with context variables
-  if (!vars || process.env.PROMPTFOO_DISABLE_TEMPLATING) {
-    return obj;
-  }
-  if (typeof obj === 'string') {
-    return nunjucks.renderString(obj, vars) as unknown as T;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map((item) => renderVarsInObject(item, vars)) as unknown as T;
-  }
-  if (typeof obj === 'object' && obj !== null) {
-    const result: Record<string, unknown> = {};
-    for (const key in obj) {
-      result[key] = renderVarsInObject((obj as Record<string, unknown>)[key], vars);
-    }
-    return result as T;
-  } else if (typeof obj === 'function') {
-    const fn = obj as Function;
-    return renderVarsInObject(fn({ vars }) as T);
-  }
-  return obj;
 }
 
 export function extractJsonObjects(str: string): object[] {
