@@ -105,6 +105,10 @@ jobs:
         run: |
           npm run format:check
 
+      - name: Check for circular dependencies
+        run: |
+          npx madge --circular ./
+
   docs:
     name: Build Docs
     runs-on: ubuntu-latest
