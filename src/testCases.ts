@@ -70,7 +70,7 @@ export async function readStandaloneTestsFile(
   } else if (fileExtension === 'json') {
     rows = parseJson(fs.readFileSync(resolvedVarsPath, 'utf-8'));
   } else if (fileExtension === 'yaml' || fileExtension === 'yml') {
-    rows = yaml.load(fs.readFileSync(resolvedVarsPath, 'utf-8')) as unknown as any;
+    rows = yaml.load(fs.readFileSync(resolvedVarsPath, 'utf-8')) as any;
   }
 
   return rows.map((row, idx) => {
@@ -83,6 +83,7 @@ export async function readStandaloneTestsFile(
 type TestCaseWithVarsFile = TestCase<
   Record<string, string | string[] | object> | string | string[]
 >;
+
 export async function readTest(
   test: string | TestCaseWithVarsFile,
   basePath: string = '',

@@ -11,7 +11,8 @@ import type {
   ProviderEmbeddingResponse,
   ProviderClassificationResponse,
 } from '../types';
-import { parsePathOrGlob, safeJsonStringify, sha256 } from '../util';
+import { parsePathOrGlob, sha256 } from '../util';
+import { safeJsonStringify } from '../util/format';
 
 interface PythonProviderConfig {
   pythonExecutable?: string;

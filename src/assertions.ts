@@ -43,7 +43,8 @@ import {
   isGradingResult,
   AssertionValue,
 } from './types';
-import { transformOutput, extractJsonObjects } from './util';
+import { extractJsonObjects } from './util';
+import { transformOutput } from './util/external';
 import { getNunjucksEngine } from './util/format';
 
 const ASSERTIONS_MAX_CONCURRENCY = process.env.PROMPTFOO_ASSERTIONS_MAX_CONCURRENCY

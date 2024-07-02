@@ -47,18 +47,16 @@ import type {
 import { checkForUpdates } from './updates';
 import {
   cleanupOldFileResults,
-  maybeReadConfig,
   migrateResultsFromFileSystemToDatabase,
   printBorder,
-  readConfigs,
   readFilters,
   readLatestResults,
-  setConfigDirectoryPath,
   setupEnv,
   writeMultipleOutputs,
   writeOutput,
   writeResultsToDatabase,
 } from './util';
+import { maybeReadConfig, readConfigs, setConfigDirectoryPath } from './util/config';
 import { BrowserBehavior, startServer } from './web/server';
 
 async function resolveConfigs(
