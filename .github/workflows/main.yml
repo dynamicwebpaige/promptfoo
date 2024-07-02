@@ -107,7 +107,7 @@ jobs:
 
       - name: Check for circular dependencies
         run: |
-          npx madge --circular ./
+          npx madge --circular src/ --extensions ts,tsx,js,jsx
 
   docs:
     name: Build Docs
