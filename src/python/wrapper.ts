@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import { PythonShell, Options as PythonShellOptions } from 'python-shell';
 import logger from '../logger';
-import { safeJsonStringify } from '../util';
+import { safeJsonStringify } from '../util/format';
 
 /**
  * Runs a Python script using the provided list of arguments.

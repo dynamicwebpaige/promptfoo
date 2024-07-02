@@ -3,7 +3,7 @@ import { PythonShell, Options as PythonShellOptions } from 'python-shell';
 import logger from '../../logger';
 import { runPython } from '../../python/wrapper';
 import type { Prompt, ApiProvider } from '../../types';
-import { safeJsonStringify } from '../../util';
+import { safeJsonStringify } from '../../util/format';
 
 /**
  * Python prompt function. Runs a specific function from the python file.
