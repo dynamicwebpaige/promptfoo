@@ -1,9 +1,7 @@
 import * as fs from 'fs';
 import { globSync } from 'glob';
 import * as path from 'path';
-import type {
-  UnifiedConfig,
-} from '../src/types';
+import type { UnifiedConfig } from '../src/types';
 import { dereferenceConfig, readConfigs } from '../src/util/config';
 
 jest.mock('proxy-agent', () => ({
@@ -25,14 +23,11 @@ jest.mock('fs', () => ({
 
 jest.mock('../src/database');
 
-
-
 describe('util/config', () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
-  
+
   describe('dereferenceConfig', () => {
     it('should dereference a config with no $refs', async () => {
       const rawConfig = {

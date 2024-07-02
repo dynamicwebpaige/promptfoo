@@ -4,11 +4,10 @@ import { transformOutput } from '../src/util/external';
 jest.mock('../src/esm');
 
 describe('util/external', () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
-  
+
   describe('transformOutput', () => {
     afterEach(() => {
       jest.clearAllMocks();

@@ -1,12 +1,7 @@
 import * as fs from 'fs';
 import { globSync } from 'glob';
 import * as path from 'path';
-import type {
-  ApiProvider,
-  EvaluateResult,
-  EvaluateTable,
-  TestCase,
-} from '../src/types';
+import type { ApiProvider, EvaluateResult, EvaluateTable, TestCase } from '../src/types';
 import {
   providerToIdentifier,
   readFilters,
@@ -18,7 +13,6 @@ import {
   extractJsonObjects,
   parsePathOrGlob,
 } from '../src/util';
-import { transformOutput } from '../src/util/external';
 
 jest.mock('proxy-agent', () => ({
   ProxyAgent: jest.fn().mockImplementation(() => ({})),
