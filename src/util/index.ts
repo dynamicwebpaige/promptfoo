@@ -11,8 +11,8 @@ import nunjucks from 'nunjucks';
 import * as os from 'os';
 import * as path from 'path';
 import invariant from 'tiny-invariant';
-import cliState from './cliState';
-import { TERMINAL_MAX_WIDTH } from './constants';
+import cliState from '../cliState';
+import { TERMINAL_MAX_WIDTH } from '../constants';
 import {
   datasets,
   getDb,
@@ -21,13 +21,13 @@ import {
   evalsToPrompts,
   prompts,
   getDbSignalPath,
-} from './database';
-import { getDirectory, importModule } from './esm';
-import { writeCsvToGoogleSheet } from './googleSheets';
-import logger from './logger';
-import { runDbMigrations } from './migrate';
-import { runPython } from './python/wrapper';
-import { readTests } from './testCases';
+} from '../database';
+import { getDirectory, importModule } from '../esm';
+import { writeCsvToGoogleSheet } from '../googleSheets';
+import logger from '../logger';
+import { runDbMigrations } from '../migrate';
+import { runPython } from '../python/wrapper';
+import { readTests } from '../testCases';
 import {
   type EvalWithMetadata,
   type EvaluateResult,
@@ -48,7 +48,7 @@ import {
   type CsvRow,
   isApiProvider,
   isProviderOptions,
-} from './types';
+} from '../types';
 
 const DEFAULT_QUERY_LIMIT = 100;
 
