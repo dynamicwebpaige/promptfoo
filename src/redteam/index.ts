@@ -152,37 +152,29 @@ export async function synthesize({
     }
   }
 
-  const pluginActions: {
-    [key: string]: (
-      provider: ApiProvider,
-      purpose: string,
-      injectVar: string,
-    ) => Promise<TestCase[]>;
-  } = {
-    pii: getPiiTests,
-    'excessive-agency': (provider, purpose, injectVar) =>
-      new ExcessiveAgencyPlugin(provider, purpose, injectVar).generateTests(),
-    hijacking: (provider, purpose, injectVar) =>
-      new HijackingPlugin(provider, purpose, injectVar).generateTests(),
-    hallucination: (provider, purpose, injectVar) =>
-      new HallucinationPlugin(provider, purpose, injectVar).generateTests(),
-    overreliance: (provider, purpose, injectVar) =>
-      new OverreliancePlugin(provider, purpose, injectVar).generateTests(),
-    competitors: (provider, purpose, injectVar) =>
-      new CompetitorPlugin(provider, purpose, injectVar).generateTests(),
-    contracts: (provider, purpose, injectVar) =>
-      new ContractPlugin(provider, purpose, injectVar).generateTests(),
-    politics: (provider, purpose, injectVar) =>
-      new PoliticsPlugin(provider, purpose, injectVar).generateTests(),
-  };
+  interface PluginAction {
+    category: string;
+    plugin: (provider: ApiProvider, purpose: string, injectVar: string) => Promise<TestCase[]>;
+  }
 
-  for (const plugin of plugins) {
-    if (pluginActions[plugin]) {
+  const pluginActions: PluginAction[] = [
+    { category: 'competitors', plugin: (provider: ApiProvider, purpose: string, injectVar: string) => new CompetitorPlugin(provider, purpose, injectVar).generateTests() },
+    { category: 'contracts', plugin: (provider: ApiProvider, purpose: string, injectVar: string) => new ContractPlugin(provider, purpose, injectVar).generateTests() },
+    { category: 'excessive-agency', plugin: (provider: ApiProvider, purpose: string, injectVar: string) => new ExcessiveAgencyPlugin(provider, purpose, injectVar).generateTests() },
+    { category: 'hallucination', plugin: (provider: ApiProvider, purpose: string, injectVar: string) => new HallucinationPlugin(provider, purpose, injectVar).generateTests() },
+    { category: 'hijacking', plugin: (provider: ApiProvider, purpose: string, injectVar: string) => new HijackingPlugin(provider, purpose, injectVar).generateTests() },
+    { category: 'overreliance', plugin: (provider: ApiProvider, purpose: string, injectVar: string) => new OverreliancePlugin(provider, purpose, injectVar).generateTests() },
+    { category: 'pii', plugin: getPiiTests },
+    { category: 'politics', plugin: (provider: ApiProvider, purpose: string, injectVar: string) => new PoliticsPlugin(provider, purpose, injectVar).generateTests() },
+  ];
+
+  for (const { category, plugin } of pluginActions) {
+    if (plugins.includes(category)) {
       updateProgress();
-      logger.debug(`Generating ${plugin} tests`);
-      const pluginTests = await pluginActions[plugin](redteamProvider, purpose, injectVar);
+      logger.debug(`Generating ${category} tests`);
+      const pluginTests = await plugin(redteamProvider, purpose, injectVar);
       testCases.push(...pluginTests);
-      logger.debug(`Added ${pluginTests.length} ${plugin} test cases`);
+      logger.debug(`Added ${pluginTests.length} ${category} test cases`);
     }
   }
 
